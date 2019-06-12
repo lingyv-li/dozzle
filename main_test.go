@@ -3,14 +3,16 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/magiconair/properties/assert"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
+	"github.com/magiconair/properties/assert"
+
 	"github.com/amir20/dozzle/docker"
 	"github.com/beme/abide"
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
 	"github.com/gobuffalo/packr"
 	"github.com/stretchr/testify/mock"
@@ -22,7 +24,7 @@ type MockedClient struct {
 	docker.Client
 }
 
-func (m *MockedClient) ListContainers() ([]docker.Container, error) {
+func (m *MockedClient) ListContainers(opt types.ContainerListOptions) ([]docker.Container, error) {
 	args := m.Called()
 	containers, ok := args.Get(0).([]docker.Container)
 	if !ok {

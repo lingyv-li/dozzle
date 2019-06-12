@@ -1,17 +1,18 @@
 package docker
 
 import (
-	"strconv"
 	"bytes"
 	"context"
 	"encoding/binary"
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/events"
-	"github.com/docker/docker/client"
 	"io"
 	"log"
 	"sort"
+	"strconv"
 	"strings"
+
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/events"
+	"github.com/docker/docker/client"
 )
 
 type dockerClient struct {
@@ -26,7 +27,7 @@ type dockerProxy interface {
 
 // Client is a proxy around the docker client
 type Client interface {
-	ListContainers() ([]Container, error)
+	ListContainers(types.ContainerListOptions) ([]Container, error)
 	ContainerLogs(context.Context, string, int) (<-chan string, <-chan error)
 	Events(context.Context) (<-chan events.Message, <-chan error)
 }
@@ -40,8 +41,8 @@ func NewClient() Client {
 	return &dockerClient{cli}
 }
 
-func (d *dockerClient) ListContainers() ([]Container, error) {
-	list, err := d.cli.ContainerList(context.Background(), types.ContainerListOptions{})
+func (d *dockerClient) ListContainers(opt types.ContainerListOptions) ([]Container, error) {
+	list, err := d.cli.ContainerList(context.Background(), opt)
 	if err != nil {
 		return nil, err
 	}

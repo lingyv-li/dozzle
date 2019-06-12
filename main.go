@@ -4,12 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/amir20/dozzle/docker"
-	"github.com/gobuffalo/packr"
-	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 	"html/template"
 	"net/http"
 	"os"
@@ -17,16 +11,25 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/amir20/dozzle/docker"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/gobuffalo/packr"
+	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 var (
-	addr    = ""
-	base    = ""
-	level   = ""
+	addr     = ""
+	base     = ""
+	level    = ""
 	tailSize = 300
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
+	version  = "dev"
+	commit   = "none"
+	date     = "unknown"
 )
 
 type handler struct {
@@ -78,7 +81,7 @@ func createRoutes(base string, h *handler) *mux.Router {
 func main() {
 	log.Infof("Dozzle version %s", version)
 	dockerClient := docker.NewClient()
-	_, err := dockerClient.ListContainers()
+	_, err := dockerClient.ListContainers(types.ContainerListOptions{})
 
 	if err != nil {
 		log.Fatalf("Could not connect to Docker Engine: %v", err)
@@ -132,7 +135,10 @@ func (h *handler) index(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *handler) listContainers(w http.ResponseWriter, r *http.Request) {
-	containers, err := h.client.ListContainers()
+	containers, err := h.client.ListContainers(types.ContainerListOptions{
+		All:     true,
+		Filters: filters.Args{},
+	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
